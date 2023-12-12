@@ -1,10 +1,6 @@
-const {
-  filterCountriesByAnimalNamePattern,
-  setPeoplesAndAnimalCounts,
-  appendListCountToElementName,
-  displayDataByFilterParameter,
-  promptAndDisplayData,
-} = require("./app.js");
+"use strict";
+
+const app = require("./app");
 
 const {
   rowData,
@@ -24,25 +20,28 @@ describe("List filter functionality", () => {
 
   incorrectDataCases.forEach((incorrectDataCases) => {
     test(`Filter function should return an empty array if the data is : ${incorrectDataCases.description}`, () => {
-      const result = filterCountriesByAnimalNamePattern(incorrectDataCases.data, "pattern");
+      const result = app.filterCountriesByAnimalNamePattern(
+        incorrectDataCases.data,
+        "pattern"
+      );
 
       expect(result).toEqual([]);
     });
   });
 
   test("Filter function should return an empty array if the pattern is not found", () => {
-    const result = filterCountriesByAnimalNamePattern(rowData, "pattern");
+    const result = app.filterCountriesByAnimalNamePattern(rowData, "pattern");
 
     expect(result).toEqual([]);
   });
 
   test("Filter function should return data only displaying country with people owning animals matching the 'oak' pattern", () => {
-    const result = filterCountriesByAnimalNamePattern(rowData, "oak");
+    const result = app.filterCountriesByAnimalNamePattern(rowData, "oak");
 
     expect(result).toEqual(oakfilteredData);
   });
   test("Filter function should return data only displaying country with people owning animals matching the 'fox' pattern", () => {
-    const result = filterCountriesByAnimalNamePattern(rowData, "fox");
+    const result = app.filterCountriesByAnimalNamePattern(rowData, "fox");
 
     expect(result).toEqual(foxfilteredData);
   });
@@ -61,24 +60,26 @@ describe("List count functionality testing", () => {
 
   incorrectDataCases.forEach((incorrectDataCases) => {
     test(`appendListCountToElementName : should return an empty array if the data is : ${incorrectDataCases.description}`, () => {
-      expect(appendListCountToElementName(incorrectDataCases.data, "children")).toEqual([]);
+      expect(app.appendListCountToElementName(incorrectDataCases.data, "children")).toEqual(
+        []
+      );
     });
   });
 
   test("appendListCountToElementName : Should return the intial list with the children count append to the parent name attribute", () => {
-    const result = appendListCountToElementName(objListWithChildrenList, "children");
+    const result = app.appendListCountToElementName(objListWithChildrenList, "children");
 
     expect(result).toEqual(countedObjListWithChildrenList);
   });
 
   incorrectDataCasesWUndefinedKey.forEach((incorrectDataCases) => {
     test(`setPeoplesAndAnimalCounts : should return an empty array if the data is : ${incorrectDataCases.description}`, () => {
-      expect(setPeoplesAndAnimalCounts(incorrectDataCases.data)).toEqual([]);
+      expect(app.setPeoplesAndAnimalCounts(incorrectDataCases.data)).toEqual([]);
     });
   });
 
   test("setPeoplesAndAnimalCounts : Should return the intial list with the children count append to the parent name attribute", () => {
-    const result = setPeoplesAndAnimalCounts(rowData);
+    const result = app.setPeoplesAndAnimalCounts(rowData);
 
     expect(result).toEqual(countedData);
   });
@@ -98,12 +99,12 @@ describe("displayDataByFilterParameter : verify filter verification, and error m
   });
 
   test("if the filter value is empty, display a message and stop the function", () => {
-    displayDataByFilterParameter([], "--filter=");
+    app.displayDataByFilterParameter([], "--filter=");
     expect(console.log).toHaveBeenCalledWith("Please add a value : --filter=<value>");
   });
 
   test("Filtered data is returned when using valid filter", () => {
-    displayDataByFilterParameter(rowData, "--filter=oak");
+    app.displayDataByFilterParameter(rowData, "--filter=oak");
     expect(console.log).toHaveBeenCalledWith(JSON.stringify(oakfilteredData, null, 2));
   });
 });
@@ -122,9 +123,25 @@ describe("promptAndDisplayData : function invoked on start and redirecting depen
     console.log = originalConsoleLog;
   });
 
+  test("calls displayDataByFilterParameter when --filter is passed", () => {
+    app.displayDataByFilterParameter = jest.fn();
+
+    process.argv.push("--filter=oak");
+    app.promptAndDisplayData();
+    expect(app.displayDataByFilterParameter).toHaveBeenCalled();
+  });
+
+  test("calls setPeoplesAndAnimalCounts when --count is passed", () => {
+    app.setPeoplesAndAnimalCounts = jest.fn();
+
+    process.argv.push("--count");
+    app.promptAndDisplayData();
+    expect(app.setPeoplesAndAnimalCounts).toHaveBeenCalled();
+  });
+
   test("calls console.log with error message when invalid command is passed", () => {
     process.argv.push("--invalid");
-    promptAndDisplayData();
+    app.promptAndDisplayData();
     expect(console.log).toHaveBeenCalledWith(
       "This command is not valid, please use :  \n --count \n or \n --filter=<value>"
     );

@@ -12,7 +12,7 @@ const data = require("./data.js").data;
  * @param {*} pattern String - pattern searched for into animals name
  * @returns List of people objects or empty list depending of the filter result
  */
-const filterPeopleByAnimalNamePattern = (peoples, pattern) => {
+module.exports.filterPeopleByAnimalNamePattern = (peoples, pattern) => {
   if (!Array.isArray(peoples) || peoples.length === 0) {
     return [];
   } else {
@@ -32,12 +32,15 @@ const filterPeopleByAnimalNamePattern = (peoples, pattern) => {
  * @param {*} pattern String - pattern searched for into animals name
  * @returns List of country with people and pet name matching the searched pattern
  */
-const filterCountriesByAnimalNamePattern = (data, pattern) => {
+module.exports.filterCountriesByAnimalNamePattern = (data, pattern) => {
   if (data === undefined || !Array.isArray(data) || data.length === 0) {
     return [];
   } else {
     return data.reduce((acc, country) => {
-      const filteredPeople = filterPeopleByAnimalNamePattern(country.people, pattern);
+      const filteredPeople = module.exports.filterPeopleByAnimalNamePattern(
+        country.people,
+        pattern
+      );
 
       return filteredPeople.length > 0
         ? [...acc, {name: country.name, people: filteredPeople}]
@@ -54,7 +57,7 @@ const filterCountriesByAnimalNamePattern = (data, pattern) => {
  * @param {*} listKey object attribute with the list to count as value
  * @returns return a copy of the initial list, with count appened to the object "name" attribute
  */
-const appendListCountToElementName = (elements, listKey) => {
+module.exports.appendListCountToElementName = (elements, listKey) => {
   if (!Array.isArray(elements) || elements.length === 0) {
     return [];
   } else {
@@ -73,14 +76,14 @@ const appendListCountToElementName = (elements, listKey) => {
  * so animals count for each people of each country
  * @returns a copy of the initial data list with count value for each categories
  */
-const setPeoplesAndAnimalCounts = (data) => {
+module.exports.setPeoplesAndAnimalCounts = (data) => {
   if (data === undefined || !Array.isArray(data) || data.length === 0) {
     return [];
   } else {
-    const peopleCountPerCountry = appendListCountToElementName(data, "people");
+    const peopleCountPerCountry = module.exports.appendListCountToElementName(data, "people");
 
     peopleCountPerCountry.forEach((country) => {
-      country.people = appendListCountToElementName(country.people, "animals");
+      country.people = module.exports.appendListCountToElementName(country.people, "animals");
     });
 
     return peopleCountPerCountry;
@@ -94,13 +97,16 @@ const setPeoplesAndAnimalCounts = (data) => {
  * Filter result will not be displayed if there is data to return.
  * @param {*} cmdParam
  */
-const displayDataByFilterParameter = (data, cmdParam) => {
+module.exports.displayDataByFilterParameter = (data, cmdParam) => {
   let patternToSearchFor = cmdParam.split("=")[1];
   if (patternToSearchFor === "") {
     console.log("Please add a value : --filter=<value>");
     return;
   }
-  const filterResult = filterCountriesByAnimalNamePattern(data, patternToSearchFor);
+  const filterResult = module.exports.filterCountriesByAnimalNamePattern(
+    data,
+    patternToSearchFor
+  );
   if (filterResult.length > 0) console.log(JSON.stringify(filterResult, null, 2));
 };
 
@@ -108,13 +114,16 @@ const displayDataByFilterParameter = (data, cmdParam) => {
  * Initial function retriving the parameter added after the node <filename> command
  * Depending of the parameter invoke filter or data count
  */
-const promptAndDisplayData = () => {
+module.exports.promptAndDisplayData = () => {
   const parameter = process.argv.slice(2)[0];
 
+  if (parameter === undefined) {
+    return;
+  }
   if (parameter.startsWith("--filter=")) {
-    displayDataByFilterParameter(data, parameter);
+    module.exports.displayDataByFilterParameter(data, parameter);
   } else if (parameter === "--count") {
-    const dataWithCount = setPeoplesAndAnimalCounts(data);
+    const dataWithCount = module.exports.setPeoplesAndAnimalCounts(data);
     console.log(JSON.stringify(dataWithCount, null, 2));
   } else {
     console.log(
@@ -124,13 +133,5 @@ const promptAndDisplayData = () => {
 };
 
 if (require.main === module) {
-  promptAndDisplayData();
+  module.exports.promptAndDisplayData();
 }
-
-module.exports = {
-  filterCountriesByAnimalNamePattern,
-  setPeoplesAndAnimalCounts,
-  appendListCountToElementName,
-  displayDataByFilterParameter,
-  promptAndDisplayData,
-};
