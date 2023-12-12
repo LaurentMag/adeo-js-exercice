@@ -1,7 +1,5 @@
 "use strict";
 
-const {count} = require("console");
-
 //retrive data
 const data = require("./data.js").data;
 
